@@ -5,13 +5,16 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 
-from services.llm_service      import classify_intent, classify_history, classify_pending, parse_reminder, chat_reply
-from services.reminder_service import add_reminder, list_history, list_pending
-from services.db                 import SessionLocal
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+# 全域定義台北時區
 TZ_TPE = ZoneInfo("Asia/Taipei")
+
+from services.llm_service        import classify_intent, classify_history, classify_pending, parse_reminder, chat_reply
+from services.reminder_service   import add_reminder, list_history, list_pending
+from services.db                 import SessionLocal
+
 router = APIRouter()
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 handler      = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
@@ -36,8 +39,6 @@ def handle_message(event):
         parsed = parse_reminder(txt)
         rec = add_reminder(user_id, parsed["event"], parsed["time"])
         # ───────── 以下是改動 ─────────
-        from zoneinfo import ZoneInfo
-        TZ_TPE = ZoneInfo("Asia/Taipei")
 
         dt = rec.time
         # 如果 rec.time 沒時區，就當作 UTC
